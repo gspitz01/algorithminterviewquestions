@@ -22,6 +22,10 @@ public class KthClosest {
         if (k > points.length) {
             throw new IllegalArgumentException(K_TOO_LARGE_MESSAGE);
         }
+        // Don't need to do this but may as well, to avoid computation
+        if (k == points.length) {
+            return Arrays.asList(points);
+        }
 
         List<PythagPoint> pythagPoints = Arrays.stream(points)
                 .map(PythagPoint::new)
