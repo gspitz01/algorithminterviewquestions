@@ -8,9 +8,23 @@ import java.util.stream.Collectors;
 
 public class KthClosest {
 
+    public static final String K_TOO_LARGE_MESSAGE = "K must be less than array size.";
+    public static final String NULL_ARRAY_MESSAGE = "Null points array.";
+    public static final String K_EQUALS_0_MESSAGE = "K must be greater than 0";
+
     public static List<Point> find(Point[] points, int k) {
+        if (points == null) {
+            throw new IllegalArgumentException(NULL_ARRAY_MESSAGE);
+        }
+        if (k == 0) {
+            throw new IllegalArgumentException(K_EQUALS_0_MESSAGE);
+        }
+        if (k > points.length) {
+            throw new IllegalArgumentException(K_TOO_LARGE_MESSAGE);
+        }
+
         List<PythagPoint> pythagPoints = Arrays.stream(points)
-                .map(point -> new PythagPoint(pythagorean(point.getX(), point.getY()), point))
+                .map(PythagPoint::new)
                 .collect(Collectors.toList());
 
         PriorityQueue<PythagPoint> maxHeap = new PriorityQueue<>(k, Collections.reverseOrder());
@@ -18,17 +32,17 @@ public class KthClosest {
             maxHeap.add(pythagPoints.get(i));
         }
         for (int i = k; i < pythagPoints.size(); i++) {
-            if (pythagPoints.get(i).compareTo(maxHeap.peek()) == -1) {
+            if (pythagPoints.get(i).compareTo(maxHeap.peek()) < 0) {
                 maxHeap.poll();
                 maxHeap.add(pythagPoints.get(i));
             }
         }
         return maxHeap.stream()
-                .map(pythagPoint -> pythagPoint.getPoint())
+                .map(PythagPoint::getPoint)
                 .collect(Collectors.toList());
     }
 
-    public static double pythagorean(double a, double b) {
+    static double pythagorean(double a, double b) {
         return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
     }
 
@@ -36,24 +50,22 @@ public class KthClosest {
         private double absDistance;
         private Point point;
 
-        public PythagPoint(double absDistance, Point point) {
-            this.absDistance = absDistance;
+        PythagPoint(Point point) {
+            this.absDistance = pythagorean(point.getX(), point.getY());
             this.point = point;
         }
 
-        public double getAbsDistance() {
+        double getAbsDistance() {
             return absDistance;
         }
 
-        public Point getPoint() {
+        Point getPoint() {
             return point;
         }
 
         @Override
         public int compareTo(PythagPoint o) {
-            if (this.getAbsDistance() > o.getAbsDistance()) return 1;
-            if (this.getAbsDistance() < o.getAbsDistance()) return -1;
-            else return 0;
+            return Double.compare(this.getAbsDistance(), o.getAbsDistance());
         }
     }
 }
